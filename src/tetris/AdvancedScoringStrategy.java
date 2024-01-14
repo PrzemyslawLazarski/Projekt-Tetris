@@ -8,6 +8,6 @@ public class AdvancedScoringStrategy implements ScoringStrategy {
 
     @Override
     public int changeNormalSpeed() {
-        return 500;
+        return 450;
     }
 }

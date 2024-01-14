@@ -5,12 +5,12 @@ import javax.swing.JFrame;
 public class WindowGame {
     public static final int WIDTH = 445, HEIGHT = 629;
 
-    private static WindowGame instance;
+    public static WindowGame instance;
     private Board board;
     private Title title;
     private JFrame window;
 
-    public WindowGame() {
+    private WindowGame() {
 
         window = new JFrame("Tetris");
         window.setSize(WIDTH, HEIGHT);
