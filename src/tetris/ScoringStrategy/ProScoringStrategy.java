@@ -1,4 +1,6 @@
-package tetris;
+package tetris.ScoringStrategy;
+
+import tetris.ScoringStrategy.ScoringStrategy;
 
 public class ProScoringStrategy implements ScoringStrategy {
     @Override

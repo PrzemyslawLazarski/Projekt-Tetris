@@ -1,4 +1,6 @@
-package tetris;
+package tetris.GameMemento;
+
+import tetris.GameMemento.GameMemento;
 
 import java.util.ArrayList;
 import java.util.List;

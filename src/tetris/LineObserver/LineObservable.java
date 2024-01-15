@@ -1,4 +1,6 @@
-package tetris;
+package tetris.LineObserver;
+
+import tetris.LineObserver.LineObserver;
 
 import java.util.ArrayList;
 import java.util.List;

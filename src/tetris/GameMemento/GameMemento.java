@@ -1,4 +1,6 @@
-package tetris;
+package tetris.GameMemento;
+
+import tetris.ScoringStrategy.ScoringStrategy;
 
 import java.awt.*;
 
@@ -10,7 +12,7 @@ public class GameMemento {
     private final String strategyType;
     private final int normal;
 
-    public GameMemento(Color[][] boardState, int score, int linesCleared, int normal,ScoringStrategy strategy) {
+    public GameMemento(Color[][] boardState, int score, int linesCleared, int normal, ScoringStrategy strategy) {
         this.boardState = copyBoardState(boardState);
         this.score = score;
         this.linesCleared = linesCleared;

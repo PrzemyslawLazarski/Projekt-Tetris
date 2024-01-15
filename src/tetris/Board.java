@@ -1,5 +1,17 @@
 package tetris;
 
+import tetris.GameMemento.Caretaker;
+import tetris.GameMemento.GameMemento;
+import tetris.GameState.GameOverState;
+import tetris.GameState.GameState;
+import tetris.GameState.PausedState;
+import tetris.GameState.RunningState;
+import tetris.LineObserver.LineObservable;
+import tetris.LineObserver.LineObserver;
+import tetris.ScoringStrategy.AdvancedScoringStrategy;
+import tetris.ScoringStrategy.BeginnerScoringStrategy;
+import tetris.ScoringStrategy.ProScoringStrategy;
+import tetris.ScoringStrategy.ScoringStrategy;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -13,68 +25,43 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener, LineObserver {
 
     private static final long serialVersionUID = 1L;
-
+    private GameState currentState;
+    private GameState runningState;
+    private GameState pausedState;
+    private GameState gameOverState;
     private GameMemento memento;
-
     private Caretaker caretaker = new Caretaker();
-
     private int currentMementoIndex = -1;
-
     private BufferedImage pause, refresh, save, load;
-
-    //board dimensions (the playing area)
     private final int boardHeight = 20, boardWidth = 10;
-
-    // block size
     public static final int blockSize = 30;
-
-    // field
     private Color[][] board = new Color[boardHeight][boardWidth];
-
-    // array with all the possible shapes
     private Shape[] shapes = new Shape[7];
-
-    // currentShape
     private static Shape currentShape, nextShape;
-
-    // game loop
     private Timer looper;
-
     private int FPS = 60;
-
     private int delay = 1000 / FPS;
-
-    // mouse events variables
     private int mouseX, mouseY;
-
     private boolean leftClick = false;
-
     private Rectangle stopBounds, refreshBounds, saveBounds, loadBounds;
-
     private boolean gamePaused = false;
-
     private boolean gameOver = false;
-
     private Color[] colors = {Color.decode("#ff0000"), Color.decode("#00ff00"), Color.decode("#0000ff"),
             Color.decode("#fc4c00"), Color.decode("#e1fa05"), Color.decode("#02f5dd"), Color.decode("#de0afa")};
     private Random random = new Random();
-    // buttons press lapse
     private Timer buttonLapse = new Timer(300, new ActionListener() {
-
         @Override
         public void actionPerformed(ActionEvent e) {
             buttonLapse.stop();
         }
     });
 
-    // score
     private int score = 0;
     public int linesCleared = 0;
     public int normal = 600;
@@ -82,11 +69,15 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private ScoringStrategy scoringStrategy;
     public Board() {
 
+        runningState = new RunningState();
+        pausedState = new PausedState();
+        gameOverState = new GameOverState();
+        currentState = runningState;
+
         lineObservable.addObserver(this);
 
         pause = ImageLoader.getInstance().loadImage("/pause.png",50,50);
         refresh = ImageLoader.getInstance().loadImage("/refresh.png",50,50);
-
         save = ImageLoader.getInstance().loadImage("/save.png",50,50);
         load = ImageLoader.getInstance().loadImage("/load.png",50,50);
 
@@ -103,10 +94,8 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         loadBounds = new Rectangle(350, 100 - load.getHeight() -20, load.getWidth(),
                 load.getHeight() + load.getHeight() / 2);
 
-        // create game looper
         looper = new Timer(delay, new GameLooper());
 
-        // create shapes
         shapes[0] = new Shape(new int[][]{
                 {1, 1, 1, 1} // I shape;
         }, this, colors[0]);
@@ -142,12 +131,16 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }, this, colors[6]);
 
     }
+
+    public void setCurrentState(GameState state) {
+        currentState = state;
+    }
+
     @Override
     public void lineFilled(int lineNumber) {
         linesCleared++;
         updateScore(linesCleared);
     }
-
 
 
     public void setScoringStrategy(ScoringStrategy scoringStrategy) {
@@ -156,35 +149,36 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
     private void update() {
         if (stopBounds.contains(mouseX, mouseY) && leftClick && !buttonLapse.isRunning() && !gameOver) {
+            setCurrentState((currentState == runningState) ? pausedState : runningState);
             buttonLapse.start();
             gamePaused = !gamePaused;
         }
 
-        if (refreshBounds.contains(mouseX, mouseY) && leftClick) {
+        if (refreshBounds.contains(mouseX, mouseY) && leftClick && !gameOver) {
             caretaker.clearMementos();
             startGame();
         }
-
-        //
+        if (refreshBounds.contains(mouseX, mouseY) && leftClick && gameOver) {
+            caretaker.clearMementos();
+            setCurrentState(runningState);
+            startGame();
+        }
         if (saveBounds.contains(mouseX, mouseY) && leftClick) {
             memento = saveToMemento();
             caretaker.addMemento(memento);
             currentMementoIndex = caretaker.mementoList.size() - 1;
         }
-
         if (loadBounds.contains(mouseX, mouseY) && leftClick) {
             if (!caretaker.mementoList.isEmpty()) {
                 restoreFromMemento(caretaker.getMemento(caretaker.mementoList.size() - 1));
             }
         }
-        //
-
         if (gamePaused || gameOver) {
             return;
         }
         currentShape.update();
     }
-//RYSOWANIE PLANSZY
+// RYSOWANIE PLANSZY
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -204,48 +198,13 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         currentShape.render(g);
 
-        if (stopBounds.contains(mouseX, mouseY)) {
-            g.drawImage(pause.getScaledInstance(pause.getWidth() + 3, pause.getHeight() + 3, BufferedImage.SCALE_DEFAULT), stopBounds.x + 3, stopBounds.y + 3, null);
-        } else {
-            g.drawImage(pause, stopBounds.x, stopBounds.y, null);
-        }
+        g.drawImage(pause, stopBounds.x, stopBounds.y, null);
+        g.drawImage(refresh, refreshBounds.x, refreshBounds.y, null);
+        g.drawImage(save, saveBounds.x, saveBounds.y, null);
+        g.drawImage(load, loadBounds.x, loadBounds.y, null);
 
+        currentState.draw(g,board);
 
-
-        if (refreshBounds.contains(mouseX, mouseY)) {
-            g.drawImage(refresh.getScaledInstance(refresh.getWidth() + 3, refresh.getHeight() + 3,
-                    BufferedImage.SCALE_DEFAULT), refreshBounds.x + 3, refreshBounds.y + 3, null);
-        } else {
-            g.drawImage(refresh, refreshBounds.x, refreshBounds.y, null);
-        }
-
-
-        //
-        if (saveBounds.contains(mouseX, mouseY)) {
-            g.drawImage(save.getScaledInstance(save.getWidth() + 3, save.getHeight() + 3, BufferedImage.SCALE_DEFAULT), saveBounds.x + 3, saveBounds.y + 3, null);
-        } else {
-            g.drawImage(save, saveBounds.x, saveBounds.y, null);
-        }
-
-        if (loadBounds.contains(mouseX, mouseY)) {
-            g.drawImage(load.getScaledInstance(load.getWidth() + 3, load.getHeight() + 3,
-                    BufferedImage.SCALE_DEFAULT), loadBounds.x + 3, loadBounds.y + 3, null);
-        } else {
-            g.drawImage(load, loadBounds.x, loadBounds.y, null);
-        }
-        //
-        if (gamePaused) {
-            String gamePausedString = "GAME PAUSED";
-            g.setColor(Color.GREEN);
-            g.setFont(new Font("Georgia", Font.BOLD, 16));
-            g.drawString(gamePausedString, WindowGame.WIDTH - 140, WindowGame.HEIGHT / 2 - 100);
-        }
-        if (gameOver) {
-            String gameOverString = "GAME OVER";
-            g.setColor(Color.RED);
-            g.setFont(new Font("Georgia", Font.BOLD, 16));
-            g.drawString(gameOverString, WindowGame.WIDTH - 130, WindowGame.HEIGHT / 2 - 100);
-        }
         g.setColor(Color.WHITE);
 
         g.setFont(new Font("Georgia", Font.BOLD, 18));
@@ -298,6 +257,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                 if (currentShape.getCoords()[row][col] != 0) {
                     if (board[currentShape.getY() + row][currentShape.getX() + col] != null) {
                         gameOver = true;
+                        setCurrentState(gameOverState);
                     }
                 }
             }
@@ -323,6 +283,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             currentShape.speedUp();
         }
+
     }
 
     @Override
@@ -370,7 +331,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         checkForStrategyChange();
     }
 
-
     private void checkForStrategyChange() {
         if (linesCleared >= 2 && scoringStrategy instanceof AdvancedScoringStrategy) {
             setScoringStrategy(new ProScoringStrategy());
@@ -387,14 +347,11 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     }
 
     public void restoreFromMemento(GameMemento memento) {
-        // Przywróć stan gry
-
 
         this.score = memento.getScore();
-        this.board = copyBoardState(memento.getBoardState()); // Użyj metody do skopiowania stanu planszy
+        this.board = copyBoardState(memento.getBoardState());
         this.linesCleared = memento.getLinesCleared();
         this.normal = memento.getNormal();
-        // Przywróć inne właściwości
 
         String strategyType = memento.getStrategyType();
         if (strategyType.equals(BeginnerScoringStrategy.class.getName())) {
@@ -417,7 +374,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         return copy;
     }
 
-
     class GameLooper implements ActionListener {
 
         @Override
@@ -427,7 +383,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
 
     }
-
     @Override
     public void mouseDragged(MouseEvent e) {
         mouseX = e.getX();
@@ -468,6 +423,5 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     public void mouseExited(MouseEvent e) {
 
     }
-
 
 }

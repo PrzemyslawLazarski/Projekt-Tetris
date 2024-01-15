@@ -2,7 +2,7 @@ package tetris;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.Arrays;
+
 
 public class Shape {
 
@@ -45,13 +45,14 @@ public class Shape {
     }
 
     long deltaTime;
-
     public void update() {
         moveX = true;
         deltaTime = System.currentTimeMillis() - lastTime;
         time += deltaTime;
         lastTime = System.currentTimeMillis();
-        if (collision && timePassedFromCollision > 50) {
+
+        //USTAWIANIE KLOCKÓW
+        if (collision  && timePassedFromCollision > 50) {
             for (int row = 0; row < coords.length; row++) {
                 for (int col = 0; col < coords[0].length; col++) {
                     if (coords[row][col] != 0) {
@@ -62,12 +63,11 @@ public class Shape {
             checkLine();
             board.addScore();
 
-
             board.setCurrentShape();
             timePassedFromCollision = -1;
         }
 
-        // check moving horizontal
+        //SPRAWDZANIE RUCHU W POZIOMIE
         if (!(x + deltaX + coords[0].length > 10) && !(x + deltaX < 0)) {
 
             for (int row = 0; row < coords.length; row++) {
@@ -86,8 +86,7 @@ public class Shape {
             }
 
         }
-
-        // Check position + height(number of row) of shape
+        // SPRAWDZANIE KOLIZJI W PIONIE
         if (timePassedFromCollision == -1) {
             if (!(y + 1 + coords.length > 20)) {
 

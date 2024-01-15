@@ -1,4 +1,4 @@
-package tetris;
+package tetris.ScoringStrategy;
 
 public interface ScoringStrategy {
 
