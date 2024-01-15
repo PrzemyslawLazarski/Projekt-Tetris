@@ -1,9 +1,10 @@
 package tetris;
 
 public class BeginnerScoringStrategy implements ScoringStrategy {
+
     @Override
     public int calculateScore(int linesCleared) {
-        return linesCleared * 1;
+        return linesCleared ;
     }
 
     @Override

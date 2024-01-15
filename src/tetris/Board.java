@@ -84,13 +84,11 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         lineObservable.addObserver(this);
 
+        pause = ImageLoader.getInstance().loadImage("/pause.png",50,50);
+        refresh = ImageLoader.getInstance().loadImage("/refresh.png",50,50);
 
-
-        pause = ImageLoader.loadImage("/pause.png",50,50);
-        refresh = ImageLoader.loadImage("/refresh.png",50,50);
-
-        save = ImageLoader.loadImage("/save.png",50,50);
-        load = ImageLoader.loadImage("/load.png",50,50);
+        save = ImageLoader.getInstance().loadImage("/save.png",50,50);
+        load = ImageLoader.getInstance().loadImage("/load.png",50,50);
 
         this.scoringStrategy = new BeginnerScoringStrategy();
 
@@ -98,7 +96,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         mouseY = 0;
 
         stopBounds = new Rectangle(350, 500, pause.getWidth(), pause.getHeight() + pause.getHeight() / 2);
-
         refreshBounds = new Rectangle(350, 500 - refresh.getHeight() - 20, refresh.getWidth(),
                 refresh.getHeight() + refresh.getHeight() / 2);
 
@@ -151,30 +148,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         updateScore(linesCleared);
     }
 
-    private void removeLine(int lineNumber) {
-        // Logika usuwania linii
-        // Możesz tutaj umieścić logikę usuwania linii z funkcji checkLine
-        int size = board.length - 1;
 
-
-        for (int i = board.length - 1; i > 0; i--) {
-            int count = 0;
-            for (int j = 0; j < board[0].length; j++) {
-                if (board[i][j] != null) {
-                    count++;
-                }
-                if (count == getBoard()[0].length) {// Linia jest pełna
-                    linesCleared++;
-                    updateScore(linesCleared);
-
-                }
-                getBoard()[size][j] = getBoard()[i][j];
-            }
-            if (count < getBoard()[0].length) {
-                size--;
-            }
-        }
-    }
 
     public void setScoringStrategy(ScoringStrategy scoringStrategy) {
         this.scoringStrategy = scoringStrategy;
@@ -210,7 +184,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
         currentShape.update();
     }
-
+//RYSOWANIE PLANSZY
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -387,57 +361,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         looper.stop();
     }
 
-    class GameLooper implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            update();
-            repaint();
-        }
-
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            leftClick = true;
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            leftClick = false;
-        }
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
-
     public void addScore() {
         score++;
     }
@@ -493,5 +416,58 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
         return copy;
     }
+
+
+    class GameLooper implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            update();
+            repaint();
+        }
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftClick = true;
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftClick = false;
+        }
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
 
 }

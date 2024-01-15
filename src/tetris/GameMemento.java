@@ -3,7 +3,7 @@ package tetris;
 import java.awt.*;
 
 public class GameMemento {
-    private final Color[][] boardState; // Załóżmy, że plansza jest reprezentowana jako tablica 2D
+    private final Color[][] boardState;
     private final int score;
     private final int linesCleared;
 

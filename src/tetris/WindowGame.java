@@ -5,12 +5,11 @@ import javax.swing.JFrame;
 public class WindowGame {
     public static final int WIDTH = 445, HEIGHT = 629;
 
-    public static WindowGame instance;
+    public static WindowGame game;
     private Board board;
-    private Title title;
     private JFrame window;
 
-    private WindowGame() {
+    public WindowGame() {
 
         window = new JFrame("Tetris");
         window.setSize(WIDTH, HEIGHT);
@@ -19,24 +18,15 @@ public class WindowGame {
         window.setResizable(false);
 
         board = new Board();
-        title = new Title(this);
 
         window.addKeyListener(board);
-        window.addKeyListener(title);
-
-        window.add(title);
 
         window.setVisible(true);
     }
 
-    public static WindowGame getInstance() {
-        if (instance == null) {
-            instance = new WindowGame();
-        }
-        return instance;
-    }
+
     public void startTetris() {
-        window.remove(title);
+
         window.addMouseMotionListener(board);
         window.addMouseListener(board);
         window.add(board);
@@ -45,7 +35,8 @@ public class WindowGame {
     }
 
     public static void main(String[] args) {
-        WindowGame.getInstance();
+        game = new WindowGame();
+        game.startTetris();
     }
 
 }

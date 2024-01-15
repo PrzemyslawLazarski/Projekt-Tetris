@@ -8,6 +8,17 @@ import java.io.IOException;
 
 public class ImageLoader {
 
+    private static ImageLoader instance;
+
+    private ImageLoader() {
+    }
+
+    public static synchronized ImageLoader getInstance() {
+        if (instance == null) {
+            instance = new ImageLoader();
+        }
+        return instance;
+    }
     public static BufferedImage loadImage(String path, int newWidth, int newHeight) {
         try {
             // Wczytaj oryginalny obraz

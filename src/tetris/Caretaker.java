@@ -14,7 +14,7 @@ public class Caretaker {
         if (index >= 0 && index < mementoList.size()) {
             return mementoList.get(index);
         }
-        return null; // lub obsłuż tę sytuację inaczej
+        return null;
     }
 
     public void clearMementos() {

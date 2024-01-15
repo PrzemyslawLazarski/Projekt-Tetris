@@ -133,7 +133,7 @@ public class Shape {
 
     }
 
-    private void checkLine() {//SPRAWDZANIE LINII
+    private void checkLine() {
         int size = board.getBoard().length - 1;
 
 
@@ -145,7 +145,7 @@ public class Shape {
                 }
                 if (count == board.getBoard()[0].length) {
 
-                    board.lineObservable.notifyLineFilled(i);//POWIADOM OBSERWATOROW
+                    board.lineObservable.notifyLineFilled(i);
                 }
                 board.getBoard()[size][j] = board.getBoard()[i][j];
             }
